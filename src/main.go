@@ -2,8 +2,10 @@ package main
 
 import (
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"os"
 	"strconv"
@@ -13,6 +15,9 @@ import (
 	"lukechampine.com/uint128"
 )
 
+const DIR_PERMISSIONS fs.FileMode = 0755
+const FILE_PERMISSIONS fs.FileMode = 0655
+
 func main() {
     IS_PRODUCTION := os.Getenv("IP_ATLAS_PRODUCTION") == "TRUE"
     if IS_PRODUCTION {
@@ -20,9 +25,7 @@ func main() {
 
         fmt.Println("Started downloading ip2asn-combined.")
         _, err := grab.Get(".", "https://iptoasn.com/data/ip2asn-combined.tsv.gz")
-        if err != nil {
-            panic(err)
-        }
+        panic_on_err("Unable to download file ip2asn-combined.tsv.gz: ", err)
         fmt.Println("Finished downloading ip2asn-combined.")
     } else {
         fmt.Println("Running in development mode. Make sure you downloaded ip2asn-combined.tsv.gz beforehand.")
@@ -41,7 +44,7 @@ func main() {
     panic_on_err("Unable to read from gzip reader: ", err)
     
     if !IS_PRODUCTION {
-        err = os.WriteFile("./ip2asn-combined.tsv", ip2asn_info_raw, 0644)
+        err = os.WriteFile("./ip2asn-combined.tsv", ip2asn_info_raw, FILE_PERMISSIONS)
         panic_on_err("Unable to write output to a file: ", err)
     }
     fmt.Println("Succesfully unziped.")
@@ -80,12 +83,16 @@ func main() {
     }
     
     // TODO: go over each key and create .json and .html for each company and fill in html templates (also, todo, create html templates lol xd).
-    var keys [] uint32
-    for k, _ := range asn_map {
-        keys = append(keys, k)
-        // fmt.Println(k)
+    os.RemoveAll("./dist")
+    os.Mkdir("./dist", DIR_PERMISSIONS)
+    os.Mkdir("./dist/data", DIR_PERMISSIONS)
+    for key_raw, value_raw := range asn_map {
+        value, err := json.Marshal(value_raw)
+        panic_on_err(fmt.Sprint("Unable to parse value into json : ", value_raw), err)
+        err = os.WriteFile(fmt.Sprint("./dist/data/", key_raw, ".json"), value, FILE_PERMISSIONS)
+        panic_on_err("Unable to write value into a file: ", err)
     }
-    fmt.Println(len(keys))
+    // fmt.Println(len(keys))
 
     fmt.Println("Done preprocessing data.")
 }
