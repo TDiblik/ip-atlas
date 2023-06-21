@@ -1,12 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="./globals.css" />
+
     <title>TODO</title>
-</head>
-<body>
-    
-</body>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="navbar-item">
+        <a href="/index.html"> IPv4 </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/ipv6.html"> IPv6 </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/combined.html"> Combined </a>
+      </div>
+      <div class="navbar-item separator">
+        <a href="/api.html"> API </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/index.html"> About </a>
+      </div>
+    </div>
+    <main>
+        <div class="column">
+            <div class="chart-row">
+                <div class="chart-label">Ahojda</div>
+                <div class="chart-bar"></div>
+                <div class="chart-percentage">50%</div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-label">Ahojdalajeljalsejfkljae</div>
+                <div class="chart-bar"></div>
+                <div class="chart-percentage">50%</div>
+            </div>
+            {{ INSERT_NEW_ROWS }}
+        </div>
+    </main>
+  </body>
 </html>
+    

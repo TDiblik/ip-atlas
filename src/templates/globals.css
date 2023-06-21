@@ -1,0 +1,70 @@
+html,
+body {
+  min-height: 100%;
+}
+body {
+  padding: 25px;
+}
+
+a {
+  text-decoration: none;
+}
+
+.navbar {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 25px;
+}
+
+.navbar-item {
+  margin-right: 15px;
+}
+
+.navbar-item > a {
+  font-size: 1.25rem;
+}
+
+.navbar-item.separator {
+  margin-left: auto;
+}
+
+@media (max-width: 992px) {
+  .navbar {
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  .navbar-item.separator {
+    margin-left: 0;
+  }
+}
+
+main {
+  display: flex;
+}
+
+.column {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.chart-label {
+  inline-size: 120px;
+  overflow-wrap: break-word;
+}
+
+.chart-bar {
+  width: 100%;
+  height: 20px;
+  background-color: red;
+}
+
+.chart-percentage {
+  margin-left: 15px;
+}
