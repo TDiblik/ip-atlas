@@ -60,6 +60,9 @@ func main() {
 		}
 		from_ip := net.ParseIP(info_parts[0]).To16()
 		to_ip := net.ParseIP(info_parts[1]).To16()
+		if from_ip.IsPrivate() || to_ip.IsPrivate() {
+			continue
+		}
 
 		company_asn_raw, err := strconv.ParseUint(info_parts[2], 10, 32)
 		panic_on_err("Unable to parse company asn: ", err)
