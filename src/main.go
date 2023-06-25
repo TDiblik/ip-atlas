@@ -115,10 +115,19 @@ func main() {
 	}
 
 	// Write ipv4, ipv6 and combined chart
+	asn_name_arr := make([]ASNKeyNameMap, 0, len(asn_map))
 	sorted_asn := make([]*Company, 0, len(asn_map))
-	for _, value := range asn_map {
+	for key, value := range asn_map {
 		sorted_asn = append(sorted_asn, value)
+		asn_name_arr = append(asn_name_arr, ASNKeyNameMap{
+			ASN:  key,
+			Name: value.Name,
+		})
 	}
+	asn_key_name_map_json, err := json.Marshal(asn_name_arr)
+	panic_on_err("Unable to parse asn_key_name_map into a json file: ", err)
+	err = os.WriteFile("./dist/company/key_name_map.json", asn_key_name_map_json, FILE_PERMISSIONS)
+	panic_on_err("Unable to write asn_key_name_map_json value into a file: ", err)
 	chart_rows_ip_v4 := create_chart_string(sorted_asn, 0)
 	chart_rows_ip_v6 := create_chart_string(sorted_asn, 1)
 	chart_rows_ip_combined := create_chart_string(sorted_asn, 2)
@@ -132,22 +141,6 @@ func main() {
 	write_index_file("combined", index_file_contents, chart_rows_ip_combined)
 
 	fmt.Println("Done creating output files.")
-}
-
-type Company struct {
-	Name                      string
-	ASN                       uint32
-	TotalNumberOfIPs_v4       uint32
-	TotalNumberOfIPs_v6       uint128.Uint128
-	TotalNumberOfIPs_combined uint128.Uint128
-	OwnedIpRanges_v4          []IPRange
-	OwnedIpRanges_v6          []IPRange
-	CountryCode               string
-}
-
-type IPRange struct {
-	FromIP net.IP
-	ToIP   net.IP
 }
 
 // Both have to be in 16 byte representation!
@@ -171,56 +164,73 @@ func copy_file(file_path, dest_path string) {
 // sort_by == default => panic
 func create_chart_string(asns []*Company, sort_by uint) string {
 	sort.Slice(asns, func(i, j int) bool {
-		switch sort_by {
-		case 0:
-			return asns[i].TotalNumberOfIPs_v4 > asns[j].TotalNumberOfIPs_v4
-		case 1:
-			return asns[i].TotalNumberOfIPs_v6.Cmp(asns[j].TotalNumberOfIPs_v6) == 1
-		case 2:
-			return asns[i].TotalNumberOfIPs_combined.Cmp(asns[j].TotalNumberOfIPs_combined) == 1
-		default:
-			panic("Unable to figure out which sorting algorithm to choose.")
-		}
+		return get_total_based_on_sort(asns[i], sort_by).Cmp(get_total_based_on_sort(asns[j], sort_by)) == 1
 	})
+
+	number_of_all_ips := uint128.Max
+	if sort_by == 0 {
+		number_of_all_ips = uint128.From64(uint64(4294967296)) // 2^32
+	}
+
+	is_max_percentage_not_routed := asns[0].ASN != 0
+	max_percentage := calc_percentage(get_total_based_on_sort(asns[0], sort_by), number_of_all_ips, is_max_percentage_not_routed)
+
 	var chart_rows_to_append strings.Builder
-	for _, value := range asns {
-		var total uint128.Uint128
-		max := uint128.Max
-		switch sort_by {
-		case 0:
-			total = uint128.From64(uint64(value.TotalNumberOfIPs_v4))
-			max = uint128.From64(uint64(4294967296)) // 2^32
-		case 1:
-			total = value.TotalNumberOfIPs_v6
-		case 2:
-			total = value.TotalNumberOfIPs_combined
-		}
+	for i, value := range asns {
+		total := get_total_based_on_sort(value, sort_by)
 		if total.Cmp(uint128.Zero) == 0 {
 			continue
 		}
 
-		// TODO: Boost more percentages
-		if value.ASN != 0 {
-			total = total.Mul64(10000)
+		is_not_routed := value.ASN != 0
+		percentage_boosted := calc_percentage(total, number_of_all_ips, is_not_routed)
+		percentage_weighted := float64(percentage_boosted.Div(max_percentage).Big().Uint64())
+		percentage_normalized := float64(percentage_boosted.Big().Uint64())
+		if i == 0 {
+			percentage_weighted = percentage_weighted * 100
+			percentage_normalized = percentage_normalized / 10_000_000
+		} else {
+			percentage_weighted = percentage_weighted / 100
+			percentage_normalized = percentage_normalized / 10_000_000_000
 		}
-		percentage_boosted := total.Div(max.Div64(1000000000))
+		fmt.Println(percentage_normalized)
 		chart_rows_to_append.WriteString(fmt.Sprint(
 			"<div class=\"chart-row\">",
 			"<div class=\"chart-label\">", value.Name, "</div>",
-			"<div class=\"chart-bar\"></div>",
-			"<div class=\"chart-percentage\">", percentage_boosted, " (", total, ")", "</div>",
+			"<div class=\"chart-bar\" style=\"width: ", percentage_weighted, "%\"></div>",
+			"<div class=\"chart-percentage\">", percentage_normalized, "% (", total, ")", "</div>",
 			"</div>",
 		))
 	}
 	return chart_rows_to_append.String()
 }
 
-func write_index_file(filename, original_index_file, chart_rows string) {
+func get_total_based_on_sort(company *Company, sort_by uint) uint128.Uint128 {
+	var total uint128.Uint128
+	switch sort_by {
+	case 0:
+		total = uint128.From64(uint64(company.TotalNumberOfIPs_v4))
+	case 1:
+		total = company.TotalNumberOfIPs_v6
+	case 2:
+		total = company.TotalNumberOfIPs_combined
+	}
+	return total
+}
+
+func calc_percentage(total, max uint128.Uint128, is_not_routed bool) uint128.Uint128 {
+	if is_not_routed {
+		total = total.Mul64(10_000)
+	}
+	return total.Div(max.Div64(1_000_000_000))
+}
+
+func write_index_file(filename, original_index_file_contents, chart_rows string) {
 	os.WriteFile(
 		fmt.Sprint("./dist/", filename, ".html"),
 		[]byte(
 			strings.Replace(
-				original_index_file,
+				original_index_file_contents,
 				"{{ INSERT_NEW_ROWS }}",
 				chart_rows,
 				1,
