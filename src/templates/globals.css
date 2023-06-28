@@ -52,16 +52,23 @@ main {
   width: 100%;
   display: flex;
   align-items: center;
+  margin-bottom: 20px;
 }
 
 .chart-label {
-  inline-size: 120px;
-  width: 120px;
-  max-width: 120px;
+  inline-size: 150px;
+  width: 150px;
+  max-width: 150px;
+  min-width: 150px;
+  margin-right: 20px;
   overflow-wrap: break-word;
 }
 
 .chart-bar {
+  width: 100%;
+}
+
+.chart-bar-internal {
   height: 20px;
   background-color: red;
 }

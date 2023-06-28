@@ -106,7 +106,7 @@ func main() {
 	os.Mkdir("./dist/company", DIR_PERMISSIONS)
 	copy_file("./templates/globals.css", "./dist/globals.css")
 
-	// Write json files
+	// Write company files (json + html page)
 	for _, value_raw := range asn_map {
 		json_value, err := json.Marshal(value_raw)
 		panic_on_err(fmt.Sprint("Unable to parse value into json : ", value_raw), err)
@@ -191,13 +191,14 @@ func create_chart_string(asns []*Company, sort_by uint) string {
 			percentage_normalized = percentage_normalized / 10_000_000
 		} else {
 			percentage_weighted = percentage_weighted / 100
-			percentage_normalized = percentage_normalized / 10_000_000_000
+			percentage_normalized = percentage_normalized / 100_000_000_000
 		}
-		fmt.Println(percentage_normalized)
 		chart_rows_to_append.WriteString(fmt.Sprint(
 			"<div class=\"chart-row\">",
-			"<div class=\"chart-label\">", value.Name, "</div>",
-			"<div class=\"chart-bar\" style=\"width: ", percentage_weighted, "%\"></div>",
+			"<div class=\"chart-label\"> <a href=\"/company/", value.ASN, ".html\" target=\"_blank\">", value.Name, "</a></div>",
+			"<div class=\"chart-bar\">",
+			"<div class=\"chart-bar-internal\" style=\"width: ", percentage_weighted, "%\"></div>",
+			"</div>",
 			"<div class=\"chart-percentage\">", percentage_normalized, "% (", total, ")", "</div>",
 			"</div>",
 		))
