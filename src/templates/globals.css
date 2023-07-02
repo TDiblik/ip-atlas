@@ -148,3 +148,16 @@ ul.ipv6 {
     grid-template-columns: none;
   }
 }
+
+/* API page */
+.api-page-container {
+  width: 100%;
+  padding-right: 50px;
+  padding-left: 50px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.api-page-container * {
+  text-align: center;
+}

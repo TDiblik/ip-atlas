@@ -108,6 +108,7 @@ func main() {
 	os.Mkdir("./dist", DIR_PERMISSIONS)
 	os.Mkdir("./dist/company", DIR_PERMISSIONS)
 	copy_file("./templates/globals.css", "./dist/globals.css")
+	copy_file("./templates/api.html", "./dist/api.html")
 
 	// Write company files (json + html page)
 	company_file_raw, err := os.ReadFile("./templates/company.html")

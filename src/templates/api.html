@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="/globals.css" />
+    <link rel="stylesheet" href="./globals.css" />
 
-    <title>Chart page</title>
+    <title>API docs</title>
   </head>
   <body>
     <div class="navbar">
@@ -28,8 +28,12 @@
       </div>
     </div>
     <main>
-        <div class="column">
-            {{ INSERT_NEW_ROWS }}
+        <div class="api-page-container">
+            <p>In order to use the API, you have to know the company ASN.</p>
+            <p>There are only two (main) endpoints </p> 
+            <p>First one is /company/key_name_map.json. This endpoint can be used to obtain ASN to Name mappings.</p>
+            <p>Once you know the ASN, you can call /company/{ASN}.json. This endpoint will return the info about the company.</p>
+            <p>Please, don't spam the endpoints and cache as much as you can on your side, since the responses can be quite large (see /company/0.json).</p>
         </div>
     </main>
   </body>
