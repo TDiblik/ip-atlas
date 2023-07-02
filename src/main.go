@@ -193,13 +193,17 @@ func create_chart_string(asns []*Company, sort_by uint) string {
 			percentage_weighted = percentage_weighted / 100
 			percentage_normalized = percentage_normalized / 100_000_000_000
 		}
+		percentage_formatted := fmt.Sprint(percentage_normalized)
+		if percentage_normalized == 0.0 {
+			percentage_formatted = "< 1e-11"
+		}
 		chart_rows_to_append.WriteString(fmt.Sprint(
 			"<div class=\"chart-row\">",
 			"<div class=\"chart-label\"> <a href=\"/company/", value.ASN, ".html\" target=\"_blank\">", value.Name, "</a></div>",
 			"<div class=\"chart-bar\">",
 			"<div class=\"chart-bar-internal\" style=\"width: ", percentage_weighted, "%\"></div>",
 			"</div>",
-			"<div class=\"chart-percentage\">", percentage_normalized, "% (", total, ")", "</div>",
+			"<div class=\"chart-percentage\">", percentage_formatted, "% (", total, ")", "</div>",
 			"</div>",
 		))
 	}
