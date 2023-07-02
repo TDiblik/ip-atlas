@@ -38,6 +38,7 @@ a {
   }
 }
 
+/* Index */
 main {
   display: flex;
 }
@@ -76,4 +77,74 @@ main {
 .chart-percentage {
   margin-left: auto;
   padding-left: 50px;
+}
+
+/* Company page */
+.container {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table {
+  width: 100%;
+  color: #212529;
+  border-collapse: collapse;
+}
+
+table,
+tr,
+th,
+td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+thead > tr > th {
+  padding: 0;
+  border-bottom-width: 2px;
+  text-align: center;
+  background: #f3f3f3;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+ul {
+  display: grid;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+ul.ipv4 {
+  grid-template-columns: repeat(3, 1fr);
+}
+ul.ipv6 {
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 2000px) {
+  ul.ipv4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  ul.ipv6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 1300px) {
+  ul.ipv4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  ul.ipv6 {
+    grid-template-columns: none;
+  }
+}
+@media (max-width: 992px) {
+  ul.ipv4 {
+    grid-template-columns: none;
+  }
 }

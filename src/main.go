@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net"
 	"os"
 	"sort"
@@ -20,19 +21,21 @@ const DIR_PERMISSIONS fs.FileMode = 0755
 const FILE_PERMISSIONS fs.FileMode = 0655
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+
 	IS_PRODUCTION := os.Getenv("IP_ATLAS_PRODUCTION") == "TRUE"
 	if IS_PRODUCTION {
-		fmt.Println("Running in production mode.")
+		log.Println("Running in production mode.")
 
-		fmt.Println("Started downloading ip2asn-combined.")
+		log.Println("Started downloading ip2asn-combined.")
 		_, err := grab.Get(".", "https://iptoasn.com/data/ip2asn-combined.tsv.gz")
 		panic_on_err("Unable to download file ip2asn-combined.tsv.gz: ", err)
-		fmt.Println("Finished downloading ip2asn-combined.")
+		log.Println("Finished downloading ip2asn-combined.")
 	} else {
-		fmt.Println("Running in development mode. Make sure you downloaded ip2asn-combined.tsv.gz beforehand.")
+		log.Println("Running in development mode. Make sure you downloaded ip2asn-combined.tsv.gz beforehand.")
 	}
 
-	fmt.Println("Starting to unzip.")
+	log.Println("Starting to unzip.")
 	gzipped_file, err := os.Open("./ip2asn-combined.tsv.gz")
 	panic_on_err("Unable to open file ip2asn-combined.tsv.gz: ", err)
 	defer gzipped_file.Close()
@@ -48,9 +51,9 @@ func main() {
 		err = os.WriteFile("./ip2asn-combined.tsv", ip2asn_info_raw, FILE_PERMISSIONS)
 		panic_on_err("Unable to write output to a file: ", err)
 	}
-	fmt.Println("Succesfully unziped.")
+	log.Println("Succesfully unziped.")
 
-	fmt.Println("Starting preprocessing data.")
+	log.Println("Starting preprocessing data.")
 	asn_map := make(map[uint32]*Company)
 	ip2asn_info := strings.Split(string(ip2asn_info_raw), "\n")
 	for _, info_row := range ip2asn_info {
@@ -96,9 +99,9 @@ func main() {
 		}
 		company.TotalNumberOfIPs_combined = company.TotalNumberOfIPs_combined.Add(number_of_ips_in_range)
 	}
-	fmt.Println("Done preprocessing data.")
+	log.Println("Done preprocessing data.")
 
-	fmt.Println("Start creating output files.")
+	log.Println("Start creating output files.")
 
 	// Prepare directories
 	os.RemoveAll("./dist")
@@ -107,11 +110,15 @@ func main() {
 	copy_file("./templates/globals.css", "./dist/globals.css")
 
 	// Write company files (json + html page)
+	company_file_raw, err := os.ReadFile("./templates/company.html")
+	panic_on_err("Unable to read ./templates/company.html: ", err)
+	company_file_contents := string(company_file_raw)
 	for _, value_raw := range asn_map {
 		json_value, err := json.Marshal(value_raw)
 		panic_on_err(fmt.Sprint("Unable to parse value into json : ", value_raw), err)
 		err = os.WriteFile(fmt.Sprint("./dist/company/", value_raw.ASN, ".json"), json_value, FILE_PERMISSIONS)
 		panic_on_err("Unable to write value into a file: ", err)
+		write_company_file(value_raw, company_file_contents)
 	}
 
 	// Write ipv4, ipv6 and combined chart
@@ -140,7 +147,7 @@ func main() {
 	write_index_file("ipv6", index_file_contents, chart_rows_ip_v6)
 	write_index_file("combined", index_file_contents, chart_rows_ip_combined)
 
-	fmt.Println("Done creating output files.")
+	log.Println("Done creating output files.")
 }
 
 // Both have to be in 16 byte representation!
@@ -231,7 +238,7 @@ func calc_percentage(total, max uint128.Uint128, is_not_routed bool) uint128.Uin
 }
 
 func write_index_file(filename, original_index_file_contents, chart_rows string) {
-	os.WriteFile(
+	err := os.WriteFile(
 		fmt.Sprint("./dist/", filename, ".html"),
 		[]byte(
 			strings.Replace(
@@ -243,11 +250,36 @@ func write_index_file(filename, original_index_file_contents, chart_rows string)
 		),
 		FILE_PERMISSIONS,
 	)
+	panic_on_err("Unable to write index file: ", err)
+}
+
+func write_company_file(company *Company, original_company_file_contents string) {
+	out := original_company_file_contents
+	out = strings.Replace(out, "{{ INSERT_NAME }}", company.Name, 1)
+	out = strings.Replace(out, "{{ INSERT_ASN }}", fmt.Sprint(company.ASN), 1)
+	out = strings.Replace(out, "{{ INSERT_COUNTRY_CODE }}", company.CountryCode, 1)
+	out = strings.Replace(out, "{{ INSERT_TOTAL_NUMBER_OF_IP4s }}", fmt.Sprint(company.TotalNumberOfIPs_v4), 1)
+	out = strings.Replace(out, "{{ INSERT_TOTAL_NUMBER_OF_IP6s }}", company.TotalNumberOfIPs_v6.String(), 1)
+	out = strings.Replace(out, "{{ INSERT_TOTAL_NUMBER_OF_IPs_COMBINED }}", company.TotalNumberOfIPs_combined.String(), 1)
+
+	var ipv4sToAppend strings.Builder
+	for _, r := range company.OwnedIpRanges_v4 {
+		ipv4sToAppend.WriteString(fmt.Sprint("<li>", r.FromIP, " - ", r.ToIP, "</li>"))
+	}
+	out = strings.Replace(out, "{{ INSERT_IPV4_RANGES }}", ipv4sToAppend.String(), 1)
+
+	var ipv6sToAppend strings.Builder
+	for _, r := range company.OwnedIpRanges_v6 {
+		ipv6sToAppend.WriteString(fmt.Sprint("<li>", r.FromIP, " - ", r.ToIP, "</li>"))
+	}
+	out = strings.Replace(out, "{{ INSERT_IPV6_RANGES }}", ipv6sToAppend.String(), 1)
+
+	err := os.WriteFile(fmt.Sprint("./dist/company/", company.ASN, ".html"), []byte(out), FILE_PERMISSIONS)
+	panic_on_err("Unable to write company file: ", err)
 }
 
 func panic_on_err(msg string, err error) {
 	if err != nil {
-		fmt.Println(msg, err)
-		panic("Forcefully panicking for the reason above.")
+		log.Fatalln(msg, err)
 	}
 }

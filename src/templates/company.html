@@ -1,12 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TODO</title>
-</head>
-<body>
-    
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="/globals.css" />
+
+    <title>Company page</title>
+  </head>
+  <body>
+    <div class="navbar">
+      <div class="navbar-item">
+        <a href="/index.html"> IPv4 </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/ipv6.html"> IPv6 </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/combined.html"> Combined </a>
+      </div>
+      <div class="navbar-item separator">
+        <a href="/api.html"> API </a>
+      </div>
+      <div class="navbar-item">
+        <a href="/about.html"> About </a>
+      </div>
+    </div>
+    <main>
+        <div class="container">
+          <table>
+            <thead>
+              <tr>
+                <th colspan="2">
+                  <h2>{{ INSERT_NAME }}</h2>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">ASN</th>
+                <td>{{ INSERT_ASN }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Country code</th>
+                <td>{{ INSERT_COUNTRY_CODE }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Total number of IPv4</th>
+                <td>{{ INSERT_TOTAL_NUMBER_OF_IP4s }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Total number of IPv6</th>
+                <td>{{ INSERT_TOTAL_NUMBER_OF_IP6s }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Total number of IPs (combined)</th>
+                <td>{{ INSERT_TOTAL_NUMBER_OF_IPs_COMBINED }}</td>
+              </tr>
+              <tr>
+                <th scope="row">IPv4 Ranges</th>
+                <td>
+                  <ul class="ipv4">
+                    {{ INSERT_IPV4_RANGES }}
+                  </ul>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">IPv6 Ranges</th>
+                <td>
+                  <ul class="ipv6">
+                    {{ INSERT_IPV6_RANGES }}
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+    </main>
+  </body>
 </html>
+
