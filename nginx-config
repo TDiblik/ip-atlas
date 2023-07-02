@@ -1,0 +1,19 @@
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name ip-atlas.tomasdiblik.cz;
+
+    ssl_certificate /etc/letsencrypt/live/ip-atlas.tomasdiblik.cz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/ip-atlas.tomasdiblik.cz/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    root /www/ip-atlas/dist;
+
+    index index.html;
+    location / {
+        expires 90d; # Since I'm updating this every 90 days anyways
+        try_files $uri $uri.html $uri/ =404;
+    }
+}

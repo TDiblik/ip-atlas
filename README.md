@@ -6,4 +6,7 @@
 # Deployment
 
 1. `./production-build.sh`
-2. `scp -r tomasdiblik.cz/ SERVER_USER@SERVER_IP:/www`
+2. `mv out ip-atlas`
+3. `scp -r ip-atlas/ SERVER_USER@SERVER_IP:/www`
+4. `mv ip-atlas out`
+5. Make sure you have cron setup `0 0 1 * * /usr/bin/bash -c "cd /www/ip-atlas/ && IP_ATLAS_PRODUCTION=TRUE ./ip-atlas.exe"`

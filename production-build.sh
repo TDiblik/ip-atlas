@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd src
-go build -o ip-atlas.exe -ldflags="-s -w" .
+GOOS=linux GOARCH=amd64 go build -o ip-atlas.exe .
 cd ..
 rm -rf out
 mkdir out
