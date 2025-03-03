@@ -55,8 +55,8 @@ func main() {
 
 	log.Println("Starting preprocessing data.")
 	asn_map := make(map[uint32]*Company)
-	ip2asn_info := strings.Split(string(ip2asn_info_raw), "\n")
-	for _, info_row := range ip2asn_info {
+	ip2asn_info := strings.SplitSeq(string(ip2asn_info_raw), "\n")
+	for info_row := range ip2asn_info {
 		info_parts := strings.Split(info_row, "\t")
 		if len(info_parts) == 1 {
 			continue
