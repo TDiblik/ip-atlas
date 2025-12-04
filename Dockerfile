@@ -1,6 +1,5 @@
 ## Builder ##
-FROM golang:1.24-alpine AS builder
-RUN apk update --no-cache && apk upgrade --no-cache && rm -rf /var/cache/apk/*
+FROM golang:alpine AS builder
 
 WORKDIR /build
 COPY src/ .
